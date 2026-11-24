@@ -1,0 +1,109 @@
+name: Build & Deploy (main)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'assets/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+# 部署必须串行：后一次 push 排队等待，绝不取消正在进行的部署。
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/leihuan7086/new-api
+
+jobs:
+  build:
+    name: Build & push image
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve tag and write VERSION
+        id: meta
+        run: |
+          SHORT_SHA=$(git rev-parse --short=7 HEAD)
+          VERSION="${GITHUB_REF_NAME}-$(date +%Y%m%d)-${SHORT_SHA}"
+          TAG="sha-${SHORT_SHA}"
+          echo "${VERSION}" > VERSION
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Building ${IMAGE}:${TAG} (version ${VERSION})"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # VPS 是 x86_64，只构建 amd64 以缩短构建时间。
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}
+            ${{ env.IMAGE }}:main
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
+
+  deploy:
+    name: Deploy to harness-vps
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Upload compose & deploy script
+        run: |
+          scp -i ~/.ssh/deploy_key -P "${{ vars.DEPLOY_PORT }}" \
+            deploy/compose.yaml deploy/deploy.sh \
+            "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:/opt/apps/stacks/new-api/"
+
+      - name: Deploy
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ vars.DEPLOY_PORT }}" \
+            "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}" \
+            "TARGET_IMAGE=${IMAGE}:${{ needs.build.outputs.tag }} bash /opt/apps/stacks/new-api/deploy.sh"
+
+      - name: Verify endpoint
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ vars.DEPLOY_PORT }}" \
+            "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}" \
+            "curl -fsS http://127.0.0.1:3000/api/status"

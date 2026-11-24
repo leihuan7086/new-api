@@ -1,0 +1,64 @@
+# harness-vps 上 new-api 栈的唯一配置来源。
+# CI 每次部署会把本文件同步到 /opt/apps/stacks/new-api/compose.yaml，
+# 请勿在服务器上手改该文件，改动一律提交到本仓库。
+#
+# 镜像标签由 /opt/apps/stacks/new-api/.env 的 NEWAPI_IMAGE 提供，
+# deploy/deploy.sh 会把它写成本次部署的不可变标签（sha-*）。
+# 密钥（PG/REDIS/SESSION_SECRET 等）只存在服务器的 .env 中，不进仓库。
+
+name: new-api
+
+services:
+  new-api:
+    image: ${NEWAPI_IMAGE}
+    container_name: new-api
+    restart: unless-stopped
+    command: --log-dir /app/logs
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      SQL_DSN: postgres://${PG_USER}:${PG_PASSWORD}@postgres:5432/new-api?sslmode=disable
+      SQL_MAX_OPEN_CONNS: 100
+      SQL_MAX_IDLE_CONNS: 30
+      REDIS_CONN_STRING: redis://:${REDIS_PASSWORD}@redis:6379/0
+      SESSION_SECRET: ${SESSION_SECRET}
+      CRYPTO_SECRET: ${CRYPTO_SECRET}
+      SESSION_COOKIE_SECURE: "true"
+      SESSION_COOKIE_TRUSTED_URL: https://api.aworker.site
+      TRUSTED_PROXIES: 172.30.0.1/32
+      TZ: ${TZ}
+      ERROR_LOG_ENABLED: "true"
+      BATCH_UPDATE_ENABLED: "true"
+      NODE_NAME: new-api-1
+      DEFAULT_LANGUAGE: zh-CN
+      STREAMING_TIMEOUT: 300
+      MAX_REQUEST_BODY_MB: 32
+    volumes:
+      - newapi-data:/data
+      - newapi-logs:/app/logs
+    networks:
+      - data-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/status | grep -q 'success'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  data-net:
+    external: true
+    name: data-net
+
+volumes:
+  newapi-data:
+    external: true
+    name: stack-newapi-data
+  newapi-logs:
+    external: true
+    name: stack-newapi-logs
