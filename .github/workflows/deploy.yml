@@ -29,6 +29,7 @@ jobs:
     outputs:
       tag: ${{ steps.meta.outputs.tag }}
       version: ${{ steps.meta.outputs.version }}
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,6 +57,7 @@ jobs:
 
       # VPS 是 x86_64，只构建 amd64 以缩短构建时间。
       - name: Build & push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -96,11 +98,19 @@ jobs:
             deploy/compose.yaml deploy/deploy.sh \
             "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:/opt/apps/stacks/new-api/"
 
+      # harness-vps 直连 ghcr.io 仅几十 KB/s，镜像拉不动；改走国内 GHCR 镜像源
+      # （DEPLOY_IMAGE_HOST，默认 ghcr.nju.edu.cn），并用构建产出的 digest 固定内容，
+      # 镜像源无法替换镜像文件。
       - name: Deploy
+        env:
+          PULL_HOST: ${{ vars.DEPLOY_IMAGE_HOST }}
         run: |
+          HOST="${PULL_HOST:-ghcr.nju.edu.cn}"
+          IMAGE_REF="${HOST}/leihuan7086/new-api:${{ needs.build.outputs.tag }}@${{ needs.build.outputs.digest }}"
+          echo "Deploying ${IMAGE_REF}"
           ssh -i ~/.ssh/deploy_key -p "${{ vars.DEPLOY_PORT }}" \
             "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}" \
-            "TARGET_IMAGE=${IMAGE}:${{ needs.build.outputs.tag }} bash /opt/apps/stacks/new-api/deploy.sh"
+            "TARGET_IMAGE=${IMAGE_REF} bash /opt/apps/stacks/new-api/deploy.sh"
 
       - name: Verify endpoint
         run: |
