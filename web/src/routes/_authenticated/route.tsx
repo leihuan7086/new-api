@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { AuthenticatedLayout } from '@/components/layout'
+import { isFdeUiEnabled } from '@/fde/lib/ui-mode'
 import { resolveAuthentication } from '@/lib/auth-session'
 import { useAuthStore } from '@/stores/auth-store'
 
@@ -34,9 +35,16 @@ export const Route = createFileRoute('/_authenticated')({
 
     if (!auth.user || !auth.accessToken) {
       throw redirect({
-        to: '/sign-in',
+        to: isFdeUiEnabled() ? '/fde/sign-in' : '/sign-in',
         search: { redirect: location.href },
       })
+    }
+
+    // When the rebuilt console is enabled, the classic authenticated area
+    // hands off to it. The switch itself lives in /system-settings/site and
+    // in the new console's settings page.
+    if (isFdeUiEnabled()) {
+      throw redirect({ to: '/fde' })
     }
   },
   component: AuthenticatedLayout,

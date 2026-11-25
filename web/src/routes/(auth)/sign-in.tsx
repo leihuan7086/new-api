@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
 
+import { isFdeUiEnabled } from '@/fde/lib/ui-mode'
 import { sanitizeAuthRedirect } from '@/features/auth/lib/auth-redirect'
 import { SignIn } from '@/features/auth/sign-in'
 import { resolveAuthentication } from '@/lib/auth-session'
@@ -32,6 +33,11 @@ export const Route = createFileRoute('/(auth)/sign-in')({
   component: SignIn,
   validateSearch: searchSchema,
   beforeLoad: async ({ search }) => {
+    // Rebuilt console enabled: its own sign-in page replaces this one.
+    if (isFdeUiEnabled()) {
+      throw redirect({ to: '/fde/sign-in', search })
+    }
+
     // 根 guard 可能因为没有会话提示而跳过了 refresh。此处必须回源确认，
     // 否则持有有效 Refresh Cookie 的用户会被要求重新输入密码。
     await resolveAuthentication()

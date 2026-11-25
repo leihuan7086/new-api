@@ -16,10 +16,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
+import { isFdeUiEnabled } from '@/fde/lib/ui-mode'
 import { Home } from '@/features/home'
 
 export const Route = createFileRoute('/')({
+  // With the rebuilt console enabled the site root belongs to it. The
+  // console's own guard forwards anonymous visitors to the new sign-in.
+  beforeLoad: () => {
+    if (isFdeUiEnabled()) {
+      throw redirect({ to: '/fde' })
+    }
+  },
   component: Home,
 })

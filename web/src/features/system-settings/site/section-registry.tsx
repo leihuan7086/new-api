@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { SystemInfoSection } from '../general/system-info-section'
+import { FdeUiSection } from './fde-ui-section'
 import {
   parseHeaderNavModules,
   parseSidebarModulesAdmin,
@@ -53,6 +54,11 @@ const SITE_SECTIONS = [
         }}
       />
     ),
+  },
+  {
+    id: 'fde-ui',
+    titleKey: '新版界面（FDE API）',
+    build: () => <FdeUiSection />,
   },
   {
     id: 'notice',

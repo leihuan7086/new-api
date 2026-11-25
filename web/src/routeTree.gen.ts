@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as FdeRouteRouteImport } from './routes/fde/route'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as UserAgreementRouteImport } from './routes/user-agreement'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
@@ -29,6 +30,14 @@ import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedChat2linkRouteImport } from './routes/_authenticated/chat2link'
 import { Route as AuthenticatedSystemSettingsRouteRouteImport } from './routes/_authenticated/system-settings/route'
 import { Route as AboutIndexRouteImport } from './routes/about/index'
+import { Route as FdeIndexRouteImport } from './routes/fde/index'
+import { Route as FdeChannelsRouteImport } from './routes/fde/channels'
+import { Route as FdeLogsRouteImport } from './routes/fde/logs'
+import { Route as FdeModelsRouteImport } from './routes/fde/models'
+import { Route as FdeSettingsRouteImport } from './routes/fde/settings'
+import { Route as FdeSignInRouteImport } from './routes/fde/sign-in'
+import { Route as FdeTokensRouteImport } from './routes/fde/tokens'
+import { Route as FdeUsersRouteImport } from './routes/fde/users'
 import { Route as OauthProviderRouteImport } from './routes/oauth/$provider'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
 import { Route as RankingsIndexRouteImport } from './routes/rankings/index'
@@ -86,6 +95,11 @@ const authRouteRoute = authRouteRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FdeRouteRoute = FdeRouteRouteImport.update({
+  id: '/fde',
+  path: '/fde',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
@@ -173,6 +187,46 @@ const AboutIndexRoute = AboutIndexRouteImport.update({
   id: '/about/',
   path: '/about/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const FdeIndexRoute = FdeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FdeRouteRoute,
+} as any)
+const FdeChannelsRoute = FdeChannelsRouteImport.update({
+  id: '/channels',
+  path: '/channels',
+  getParentRoute: () => FdeRouteRoute,
+} as any)
+const FdeLogsRoute = FdeLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => FdeRouteRoute,
+} as any)
+const FdeModelsRoute = FdeModelsRouteImport.update({
+  id: '/models',
+  path: '/models',
+  getParentRoute: () => FdeRouteRoute,
+} as any)
+const FdeSettingsRoute = FdeSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => FdeRouteRoute,
+} as any)
+const FdeSignInRoute = FdeSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => FdeRouteRoute,
+} as any)
+const FdeTokensRoute = FdeTokensRouteImport.update({
+  id: '/tokens',
+  path: '/tokens',
+  getParentRoute: () => FdeRouteRoute,
+} as any)
+const FdeUsersRoute = FdeUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => FdeRouteRoute,
 } as any)
 const OauthProviderRoute = OauthProviderRouteImport.update({
   id: '/oauth/$provider',
@@ -438,6 +492,7 @@ const AuthenticatedOauthPluginKeyCallbackRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/fde': typeof FdeRouteRouteWithChildren
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/user-agreement': typeof UserAgreementRoute
   '/system-settings': typeof AuthenticatedSystemSettingsRouteRouteWithChildren
@@ -454,8 +509,16 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/chat2link': typeof AuthenticatedChat2linkRoute
+  '/fde/channels': typeof FdeChannelsRoute
+  '/fde/logs': typeof FdeLogsRoute
+  '/fde/models': typeof FdeModelsRoute
+  '/fde/settings': typeof FdeSettingsRoute
+  '/fde/sign-in': typeof FdeSignInRoute
+  '/fde/tokens': typeof FdeTokensRoute
+  '/fde/users': typeof FdeUsersRoute
   '/oauth/$provider': typeof OauthProviderRoute
   '/about/': typeof AboutIndexRoute
+  '/fde/': typeof FdeIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/rankings/': typeof RankingsIndexRoute
   '/setup/': typeof SetupIndexRoute
@@ -518,8 +581,16 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/chat2link': typeof AuthenticatedChat2linkRoute
+  '/fde/channels': typeof FdeChannelsRoute
+  '/fde/logs': typeof FdeLogsRoute
+  '/fde/models': typeof FdeModelsRoute
+  '/fde/settings': typeof FdeSettingsRoute
+  '/fde/sign-in': typeof FdeSignInRoute
+  '/fde/tokens': typeof FdeTokensRoute
+  '/fde/users': typeof FdeUsersRoute
   '/oauth/$provider': typeof OauthProviderRoute
   '/about': typeof AboutIndexRoute
+  '/fde': typeof FdeIndexRoute
   '/pricing': typeof PricingIndexRoute
   '/rankings': typeof RankingsIndexRoute
   '/setup': typeof SetupIndexRoute
@@ -570,6 +641,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/(auth)': typeof authRouteRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/fde': typeof FdeRouteRouteWithChildren
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/user-agreement': typeof UserAgreementRoute
   '/_authenticated/system-settings': typeof AuthenticatedSystemSettingsRouteRouteWithChildren
@@ -586,8 +658,16 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/chat2link': typeof AuthenticatedChat2linkRoute
+  '/fde/channels': typeof FdeChannelsRoute
+  '/fde/logs': typeof FdeLogsRoute
+  '/fde/models': typeof FdeModelsRoute
+  '/fde/settings': typeof FdeSettingsRoute
+  '/fde/sign-in': typeof FdeSignInRoute
+  '/fde/tokens': typeof FdeTokensRoute
+  '/fde/users': typeof FdeUsersRoute
   '/oauth/$provider': typeof OauthProviderRoute
   '/about/': typeof AboutIndexRoute
+  '/fde/': typeof FdeIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/rankings/': typeof RankingsIndexRoute
   '/setup/': typeof SetupIndexRoute
@@ -637,6 +717,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/fde'
     | '/privacy-policy'
     | '/user-agreement'
     | '/system-settings'
@@ -653,8 +734,16 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/chat2link'
+    | '/fde/channels'
+    | '/fde/logs'
+    | '/fde/models'
+    | '/fde/settings'
+    | '/fde/sign-in'
+    | '/fde/tokens'
+    | '/fde/users'
     | '/oauth/$provider'
     | '/about/'
+    | '/fde/'
     | '/pricing/'
     | '/rankings/'
     | '/setup/'
@@ -717,8 +806,16 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/chat2link'
+    | '/fde/channels'
+    | '/fde/logs'
+    | '/fde/models'
+    | '/fde/settings'
+    | '/fde/sign-in'
+    | '/fde/tokens'
+    | '/fde/users'
     | '/oauth/$provider'
     | '/about'
+    | '/fde'
     | '/pricing'
     | '/rankings'
     | '/setup'
@@ -768,6 +865,7 @@ export interface FileRouteTypes {
     | '/'
     | '/(auth)'
     | '/_authenticated'
+    | '/fde'
     | '/privacy-policy'
     | '/user-agreement'
     | '/_authenticated/system-settings'
@@ -784,8 +882,16 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/chat2link'
+    | '/fde/channels'
+    | '/fde/logs'
+    | '/fde/models'
+    | '/fde/settings'
+    | '/fde/sign-in'
+    | '/fde/tokens'
+    | '/fde/users'
     | '/oauth/$provider'
     | '/about/'
+    | '/fde/'
     | '/pricing/'
     | '/rankings/'
     | '/setup/'
@@ -836,6 +942,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   authRouteRoute: typeof authRouteRouteWithChildren
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  FdeRouteRoute: typeof FdeRouteRouteWithChildren
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   UserAgreementRoute: typeof UserAgreementRoute
   errors401Route: typeof errors401Route
@@ -872,6 +979,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fde': {
+      id: '/fde'
+      path: '/fde'
+      fullPath: '/fde'
+      preLoaderRoute: typeof FdeRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy-policy': {
@@ -992,6 +1106,62 @@ declare module '@tanstack/react-router' {
       fullPath: '/about/'
       preLoaderRoute: typeof AboutIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/fde/': {
+      id: '/fde/'
+      path: '/'
+      fullPath: '/fde/'
+      preLoaderRoute: typeof FdeIndexRouteImport
+      parentRoute: typeof FdeRouteRoute
+    }
+    '/fde/channels': {
+      id: '/fde/channels'
+      path: '/channels'
+      fullPath: '/fde/channels'
+      preLoaderRoute: typeof FdeChannelsRouteImport
+      parentRoute: typeof FdeRouteRoute
+    }
+    '/fde/logs': {
+      id: '/fde/logs'
+      path: '/logs'
+      fullPath: '/fde/logs'
+      preLoaderRoute: typeof FdeLogsRouteImport
+      parentRoute: typeof FdeRouteRoute
+    }
+    '/fde/models': {
+      id: '/fde/models'
+      path: '/models'
+      fullPath: '/fde/models'
+      preLoaderRoute: typeof FdeModelsRouteImport
+      parentRoute: typeof FdeRouteRoute
+    }
+    '/fde/settings': {
+      id: '/fde/settings'
+      path: '/settings'
+      fullPath: '/fde/settings'
+      preLoaderRoute: typeof FdeSettingsRouteImport
+      parentRoute: typeof FdeRouteRoute
+    }
+    '/fde/sign-in': {
+      id: '/fde/sign-in'
+      path: '/sign-in'
+      fullPath: '/fde/sign-in'
+      preLoaderRoute: typeof FdeSignInRouteImport
+      parentRoute: typeof FdeRouteRoute
+    }
+    '/fde/tokens': {
+      id: '/fde/tokens'
+      path: '/tokens'
+      fullPath: '/fde/tokens'
+      preLoaderRoute: typeof FdeTokensRouteImport
+      parentRoute: typeof FdeRouteRoute
+    }
+    '/fde/users': {
+      id: '/fde/users'
+      path: '/users'
+      fullPath: '/fde/users'
+      preLoaderRoute: typeof FdeUsersRouteImport
+      parentRoute: typeof FdeRouteRoute
     }
     '/oauth/$provider': {
       id: '/oauth/$provider'
@@ -1461,10 +1631,37 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface FdeRouteRouteChildren {
+  FdeChannelsRoute: typeof FdeChannelsRoute
+  FdeLogsRoute: typeof FdeLogsRoute
+  FdeModelsRoute: typeof FdeModelsRoute
+  FdeSettingsRoute: typeof FdeSettingsRoute
+  FdeSignInRoute: typeof FdeSignInRoute
+  FdeTokensRoute: typeof FdeTokensRoute
+  FdeUsersRoute: typeof FdeUsersRoute
+  FdeIndexRoute: typeof FdeIndexRoute
+}
+
+const FdeRouteRouteChildren: FdeRouteRouteChildren = {
+  FdeChannelsRoute: FdeChannelsRoute,
+  FdeLogsRoute: FdeLogsRoute,
+  FdeModelsRoute: FdeModelsRoute,
+  FdeSettingsRoute: FdeSettingsRoute,
+  FdeSignInRoute: FdeSignInRoute,
+  FdeTokensRoute: FdeTokensRoute,
+  FdeUsersRoute: FdeUsersRoute,
+  FdeIndexRoute: FdeIndexRoute,
+}
+
+const FdeRouteRouteWithChildren = FdeRouteRoute._addFileChildren(
+  FdeRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   authRouteRoute: authRouteRouteWithChildren,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  FdeRouteRoute: FdeRouteRouteWithChildren,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   UserAgreementRoute: UserAgreementRoute,
   errors401Route: errors401Route,
